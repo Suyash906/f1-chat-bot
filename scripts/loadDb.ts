@@ -88,26 +88,73 @@ const splitter = new RecursiveCharacterTextSplitter({
     chunkOverlap: 100
 })
 
+const isValidEmbedding = (embedding: number[]): boolean => {
+    // Check if embedding exists and is an array
+    if (!embedding || !Array.isArray(embedding)) {
+        console.warn('Embedding is not a valid array');
+        return false;
+    }
+    
+    // Check if dimension is exactly 1536
+    if (embedding.length !== MODEL_DIMENSIONS) {
+        console.warn(`Invalid embedding dimension: ${embedding.length}, expected: ${MODEL_DIMENSIONS}`);
+        return false;
+    }
+    
+    // Check if all values are valid numbers
+    if (embedding.some(val => typeof val !== 'number' || isNaN(val) || !isFinite(val))) {
+        console.warn('Embedding contains invalid numeric values');
+        return false;
+    }
+    
+    return true;
+};
+
 const loadSampleData = async () => {
     const collection = db.collection(ASTRA_DB_COLLECTION)
+    let processedChunks = 0;
+    let skippedChunks = 0;
+    
     for await (const url of f1Data) {
-        const content = await scrapePage(url)
-        const chunks = await splitter.splitText(content)
-        for await (const chunk of chunks) {
-            const embedding = await openai.embeddings.create({
-                model: "text-embedding-3-small",
-                input: chunk,
-                encoding_format: "float"
-            })
+        console.log(`Processing URL: ${url}`);
+        try {
+            const content = await scrapePage(url)
+            const chunks = await splitter.splitText(content)
+            
+            for await (const chunk of chunks) {
+                try {
+                    const embedding = await openai.embeddings.create({
+                        model: "text-embedding-3-small",
+                        input: chunk,
+                        encoding_format: "float"
+                    })
 
-            const vector = embedding.data[0].embedding
+                    const vector = embedding.data[0].embedding
 
-            const res = await collection.insertOne({
-                $vector: vector,
-                text: chunk
-            })
+                    // Validate embedding before inserting
+                    if (!isValidEmbedding(vector)) {
+                        console.error(`Skipping invalid embedding for chunk: ${chunk.substring(0, 100)}...`);
+                        skippedChunks++;
+                        continue;
+                    }
+
+                    const res = await collection.insertOne({
+                        $vector: vector,
+                        text: chunk
+                    })
+                    
+                    processedChunks++;
+                } catch (error) {
+                    console.error(`Error processing chunk from ${url}:`, error);
+                    skippedChunks++;
+                }
+            }
+        } catch (error) {
+            console.error(`Error processing URL ${url}:`, error);
         }
     }
+    
+    console.log(`Data loading completed. Processed: ${processedChunks}, Skipped: ${skippedChunks}`);
 }
 
 const scrapePage = async (url: string) => {
