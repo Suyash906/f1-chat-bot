@@ -22,10 +22,6 @@ const openai = new OpenAI({
 });
 
 const f1Data = [
-    "https://en.wikipedia.org/wiki/Formula_One",
-    "https://www.formula1.com/en/racing/2025",
-    "https://www.formula1.com/en/latest/tags/stats",
-    "https://www.motorsport.com/f1/news/",
     "https://www.autosport.com/f1/",
     "http://www.gptoday.com/",
     "https://motorsportstats.com/",
