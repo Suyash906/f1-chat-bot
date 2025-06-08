@@ -10,7 +10,15 @@ import PromptSugesstionRow from "./components/PromptSugesstionRow";
 
 const Home = () => {
     const {append, isLoading, messages, input, handleInputChange, handleSubmit} = useChat()
-    const noMessages = false;
+    const noMessages = !messages || messages.length === 0;
+    const handlePrompt = ( promptText ) => {
+        const msg: Message = {
+            id: crypto.randomUUID(),
+            content: promptText,
+            role: "user"
+        }
+        append(msg);
+    }
     return(
         <main>
             <Image src={f1gpt} width="250" alt="F1GPT"/>
@@ -24,12 +32,13 @@ const Home = () => {
                             We hope you enjoy!
                         </p>
                         <br/>
-                        <PromptSugesstionRow/>
+                        <PromptSugesstionRow onPromptClick={handlePrompt}/>
                     </>
 
                 ):(
                     <>
-                    <LoadingBubble/>
+                    {messages.map((message, index) => <Bubble key={`message-${index}`} message={message} /> )}
+                    {isLoading && <LoadingBubble/>}
                     </>
                 )}
                 <form onSubmit={handleSubmit}>

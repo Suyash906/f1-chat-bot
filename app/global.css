@@ -88,3 +88,41 @@ input:focus {
     50% {background-size: calc(100%/3) 100%, calc(100%/3) 0, calc(100%/3) 100%;}
     66% {background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0;}
 }
+
+.bubble {
+    margin: 80px;
+    padding: 80px;
+    font-size: 15px;
+    border: none;
+    color: #383838;
+    box-shadow: #959da533 0 8px 24px;
+    width: 80%;
+    text-align: left;
+}
+
+.bubble.user {
+    border-radius: 20px 20px 0 20px;
+    background-color: #E1F4FFFF;
+    margin-left: auto;
+
+}
+
+.bubble.assistant {
+    border-radius: 20px 20px 20 0px;
+    background-color: #dce7ff;
+}
+
+.prompt-suggestion-row{
+    width: 100%;
+}
+
+.prompt-suggestion-button {
+    margin: 8px;
+    padding: 8px;
+    font-size: 15px;
+    border: none;
+    background-color: #fff;
+    border-radius: 10px;
+    color: #383838;
+    box-shadow: #959da533 0 8px 24px;
+}
